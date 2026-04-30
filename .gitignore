@@ -1,0 +1,3 @@
+#Ignorar Entorno Virtual (venv/) y Flutter (mobile/)
+venv/
+flutter/
