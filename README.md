@@ -2,7 +2,7 @@
 Sistema de Monitoreo Urbano y Gestión de Alertas de Seguridad
 
 ## Integrantes
-* Jeik - [Lider]
+* Jeick Carlos Emilio Melgar Matos - [Lider]
 * Jhordan Alexis Pasion Paucar - [Ayudante]
 * -
 * -
