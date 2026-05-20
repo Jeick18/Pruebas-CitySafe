@@ -1,26 +1,38 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/incident.dart';
 import '../models/user.dart';
 
 class ApiService {
-  // Alias de localhost para emulador Android es 10.0.2.2 (o 127.0.0.1 para iOS/Web)
+  
   final String baseUrl = "http://127.0.0.1:8000";
 
-  // Singleton
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
 
   String? _token;
 
-  void setToken(String token) {
+  void setToken(String? token) {
     _token = token;
   }
 
   bool get isAuthenticated => _token != null;
+
+  // Cargar token desde el almacenamiento persistente
+  Future<void> loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('auth_token');
+  }
+
+  // Cerrar sesión y limpiar almacenamiento
+  Future<void> logout() async {
+    _token = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+  }
 
   // Login
   Future<bool> login(String username, String password) async {
@@ -34,6 +46,11 @@ class ApiService {
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         _token = jsonResponse['access_token'];
+        
+        // Guardar token persistentemente
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', _token!);
+        
         return true;
       } else {
         return false;
