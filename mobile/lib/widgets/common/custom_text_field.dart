@@ -5,6 +5,7 @@ class CustomTextField extends StatelessWidget {
   final IconData prefixIcon;
   final bool obscureText;
   final Widget? suffixIcon;
+  final TextEditingController? controller;
 
   const CustomTextField({
     super.key,
@@ -12,12 +13,14 @@ class CustomTextField extends StatelessWidget {
     required this.prefixIcon,
     this.obscureText = false,
     this.suffixIcon,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
         hintText: hintText,
@@ -28,7 +31,9 @@ class CustomTextField extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
         filled: true,
-        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.5,
+        ),
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
       ),
     );
