@@ -6,13 +6,14 @@ from passlib.context import CryptContext
 
 SECRET_KEY = "CITYSAFE_UNMSM_FISI_2026_SECURE_KEY"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Configuracion del bcrypt para el hasheo real de contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Proceso de creación y verificación de contraseña y token
 def verificar_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -26,11 +27,15 @@ def crear_token(data: dict):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def validar_token(token: str = Depends(oauth2_scheme)):
+    
+    #Prepara la respuesta ante un error de validar token
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No se pudieron validar las credenciales",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    #Proceso de validación del token del usuario con seguridad ante errores.
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")

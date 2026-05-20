@@ -5,3 +5,4 @@ venv/
 flutter/
 *.db
 .godot/
+__pycache__/

@@ -29,7 +29,7 @@ class IncidenteCreate(IncidenteBase):
 class Incidente(IncidenteBase):
     id: int
     fecha_reporte: datetime
-    usuario_id: int
+    usuario: Usuario
 
     class Config:
         from_attributes = True
