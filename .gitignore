@@ -1,6 +1,7 @@
 #Ignorar Entorno Virtual (venv/), Flutter (mobile/) 
 #y otros archivos o carpetas del proyecto.
 
+.venv/
 venv/
 flutter/
 *.db
