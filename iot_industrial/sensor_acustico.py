@@ -1,12 +1,14 @@
-import paho.mqtt.client as mqtt
-import json
+import requests
 import time
 import random
 
-# --- CONFIGURACIÓN DEL DISPOSITIVO IoT (MQTT PUBLISHER) ---
-BROKER = "broker.hivemq.com"
-PORT = 1883
-TOPIC = "citysafe/estaciones/1"  # Identificador final de este poste (Estación 1)
+# --- CONFIGURACIÓN DEL DISPOSITIVO IoT ---
+API_URL = "http://localhost:8000/incidentes/"
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKYXBwIiwiZXhwIjoxNzgwNTcwNDA0fQ.nDlR1keSRdpE5UthdfeMCEuq_h4e0lTi3Wyzu6ULVWU"
+
+# Ubicación estática del poste inteligente
+SENSOR_LAT = -12.0621
+SENSOR_LNG = -77.1435
 
 def generar_decibelios():
     # 90% del tiempo hay ruido urbano normal, 10% de probabilidad de un pico fuerte
@@ -18,41 +20,40 @@ def generar_decibelios():
 def monitorear_audio():
     print("--- Iniciando Módulo IoT Acústico CitySafe (MOTE-001) ---")
     
-    # Inicialización del cliente MQTT
-    client = mqtt.Client()
-    
-    try:
-        client.connect(BROKER, PORT)
-        print(f"[MQTT] Conectado exitosamente al broker: {BROKER}")
-    except Exception as e:
-        print(f"[CRÍTICO] No se pudo establecer conexión con el broker MQTT: {e}")
-        return
+    headers = {
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json"
+    }
 
     while True:
         db_actual = generar_decibelios()
         print(f"[Micrófono] Nivel de ruido local: {db_actual} dB")
 
         if db_actual > 120.0:
-            print(f"[ALERTA] Ruido extremo detectado ({db_actual} dB). Transmitiendo telemetría...")
+            print(f"⚠️ [ALERTA] Ruido extremo detectado ({db_actual} dB). Transmitiendo telemetría...")
             
-            # Formato de carga útil optimizado para el Puente MQTT
+            # Esquema exacto que espera la API
             payload = {
                 "tipo": "Alarma Acústica",
+                "latitud": SENSOR_LAT,
+                "longitud": SENSOR_LNG,
                 "nivel_urgencia": 5,
-                "detalles": f"Pico acústico anómalo de {db_actual} dB detectado automáticamente. Posible altercado o disparo en la zona."
+                "descripcion": f"Pico acústico anómalo de {db_actual} dB detectado automáticamente. Posible altercado o disparo en la zona."
             }
 
             try:
-                # Publicación del mensaje estructurado hacia el broker
-                client.publish(TOPIC, json.dumps(payload))
-                print(f"[ÉXITO] Mensaje publicado en el tópico: {TOPIC}\n")
+                response = requests.post(API_URL, json=payload, headers=headers)
+                if response.status_code == 200:
+                    print("[ÉXITO] Incidente despachado a la red CitySafe.\n")
+                else:
+                    print(f"[ERROR] Fallo en la red. Código: {response.status_code}\n")
             except Exception as e:
-                print(f"[ERROR] No se pudo enviar el mensaje por MQTT: {e}\n")
+                print(f"[CRÍTICO] Conexión perdida con el servidor central: {e}\n")
             
             # Entra en modo de enfriamiento temporal para no generar reportes duplicados
             time.sleep(15) 
         else:
-            # Pausa corta entre mediciones de rutina
+            # Pausa corta
             time.sleep(3)
 
 if __name__ == "__main__":

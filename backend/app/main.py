@@ -33,11 +33,15 @@ def registrar_usuario(user: schemas.UsuarioCreate, db: Session = Depends(databas
     
     #Hasheo de contraseña y molde de nuevo usuario para la db
     hashed_password = auth.obtener_password_hash(user.password)
-    nuevo_usuario = models.UsuarioDB(username=user.username, hashed_password=hashed_password)
+    nuevo_usuario = models.UsuarioDB(username=user.username, hashed_password=hashed_password, rol=user.rol)
     db.add(nuevo_usuario)
     db.commit()
     db.refresh(nuevo_usuario)
     return nuevo_usuario
+
+@app.get("/usuarios/me", response_model=schemas.Usuario, tags=["Usuarios"])
+def read_users_me(current_user: models.UsuarioDB = Depends(get_current_user)):
+    return current_user
 
 #POST para login con usuario y contraseña usando protocolo estándar OAuth2
 @app.post("/token", tags=["Seguridad"])

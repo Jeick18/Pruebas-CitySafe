@@ -1,44 +1,43 @@
-import paho.mqtt.client as mqtt
-import json
+import requests
 import time
 
-# --- CONFIGURACIÓN DEL DISPOSITIVO IoT (MQTT PUBLISHER) ---
-BROKER = "broker.hivemq.com"
-PORT = 1883
-TOPIC = "citysafe/estaciones/2"  # Identificador final de este tótem (Estación 2)
+API_URL = "http://localhost:8000/incidentes/"
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKYXBwIiwiZXhwIjoxNzgwNTcwNDA0fQ.nDlR1keSRdpE5UthdfeMCEuq_h4e0lTi3Wyzu6ULVWU"
+
+# Ubicación estática del Botón
+BOTON_LAT = -12.0431
+BOTON_LNG = -77.0282
 
 def iniciar_totem():
     print("--- Tótem de Seguridad CitySafe (BOTON-002) Iniciado ---")
     print("Esperando interacción ciudadana...")
     
-    # Inicialización del cliente MQTT
-    client = mqtt.Client()
-    
-    try:
-        client.connect(BROKER, PORT)
-        print(f"[MQTT] Conectado exitosamente al broker: {BROKER}")
-    except Exception as e:
-        print(f"[CRÍTICO] No se pudo establecer conexión con el broker MQTT: {e}")
-        return
+    headers = {
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json"
+    }
 
     while True:
         input("\n[PULSA ENTER PARA ACTIVAR EL BOTÓN DE PÁNICO]")
         
-        print("🚨 ¡BOTÓN PRESIONADO! Enviando señal de auxilio vía MQTT...")
+        print("🚨 ¡BOTÓN PRESIONADO! Enviando señal de auxilio a la central...")
         
-        # Formato de carga útil optimizado para el Puente MQTT
         payload = {
             "tipo": "Botón de Pánico",
+            "latitud": BOTON_LAT,
+            "longitud": BOTON_LNG,
             "nivel_urgencia": 5,
-            "detalles": "Activación manual del tótem de seguridad. Requiere asistencia policial inmediata."
+            "descripcion": "Activación manual del tótem de seguridad. Requiere asistencia policial inmediata."
         }
 
         try:
-            # Publicación del mensaje estructurado hacia el broker
-            client.publish(TOPIC, json.dumps(payload))
-            print(f"[ÉXITO] Alerta publicada en el tópico: {TOPIC}")
+            response = requests.post(API_URL, json=payload, headers=headers)
+            if response.status_code == 200:
+                print("[ÉXITO] Central notificada. Unidades en camino.")
+            else:
+                print(f"[ERROR] Código: {response.status_code}")
         except Exception as e:
-            print(f"[ERROR] No se pudo enviar el mensaje por MQTT: {e}")
+            print(f"[CRÍTICO] Fallo de red: {e}")
             
         time.sleep(2)
 

@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../widgets/home/category_navigation_bar.dart';
 import '../widgets/home/home_app_bar.dart';
 import '../widgets/home/incident_list_area.dart';
+import 'incident_map_screen.dart';
 import 'report_emergency.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -162,6 +163,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       selectedCategory: _selectedCategory,
                       onRefresh: _refreshData,
                       onReportEmergency: _openReportEmergency,
+                      onOpenMap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const IncidentMapScreen(),
+                          ),
+                        );
+                      },
                       onDeleteIncident: _deleteIncident,
                     ),
             ),
