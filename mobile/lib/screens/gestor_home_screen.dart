@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../services/api_service.dart';
-import '../widgets/common/glass_container.dart';
 import '../widgets/home/incident_list_area.dart';
 import '../widgets/home/stat_card.dart';
 import 'incident_map_screen.dart';
@@ -108,8 +107,6 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
     }
   }
 
-
-
   Widget _buildLeftPanel(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -143,7 +140,7 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(32),
             ),
             child: Column(
@@ -202,18 +199,21 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
   Widget _buildMapPanel(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.2), width: 1.5),
+        border: Border.all(
+          color: colorScheme.outline.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
+            color: colorScheme.shadow.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
-          )
+          ),
         ],
       ),
       child: ClipRRect(
@@ -227,7 +227,7 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     // Determinamos si la pantalla es ancha (Landscape/Web/Tablet) o estrecha (Portrait Mobile)
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -243,11 +243,15 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
           children: [
             Text(
               'Centro de Comando',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text(
-              'Monitoreo en vivo de incidentes', 
-              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)
+              'Monitoreo en vivo de incidentes',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -261,7 +265,7 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               await ApiService().logout();
-              if (mounted) Navigator.pushReplacementNamed(context, '/');
+              if (context.mounted) Navigator.pushReplacementNamed(context, '/');
             },
             tooltip: 'Cerrar sesión',
           ),
@@ -272,25 +276,14 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
         child: isWideScreen
             ? Row(
                 children: [
-                  SizedBox(
-                    width: 400,
-                    child: _buildLeftPanel(context),
-                  ),
-                  Expanded(
-                    child: _buildMapPanel(context),
-                  ),
+                  SizedBox(width: 400, child: _buildLeftPanel(context)),
+                  Expanded(child: _buildMapPanel(context)),
                 ],
               )
             : Column(
                 children: [
-                  Expanded(
-                    flex: 4,
-                    child: _buildMapPanel(context),
-                  ),
-                  Expanded(
-                    flex: 5,
-                    child: _buildLeftPanel(context),
-                  ),
+                  Expanded(flex: 4, child: _buildMapPanel(context)),
+                  Expanded(flex: 5, child: _buildLeftPanel(context)),
                 ],
               ),
       ),

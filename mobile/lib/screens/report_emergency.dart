@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:geocoding/geocoding.dart';
@@ -6,7 +7,6 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../services/api_service.dart';
 import '../widgets/common/custom_popups.dart';
-import '../widgets/common/glass_container.dart';
 import '../widgets/report/category_selector.dart';
 import '../widgets/report/location_picker_map.dart';
 import '../widgets/report/urgency_selector.dart';
@@ -24,10 +24,9 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   bool _isLoading = false;
 
-  Position? _currentPosition;
   String _addressText = 'Toca para buscar tu ubicación';
   bool _isGettingLocation = false;
-  
+
   MapLibreMapController? mapController;
   LatLng _mapCenter = const LatLng(-12.0464, -77.0428); // Lima por defecto
 
@@ -49,6 +48,14 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
       "color": Colors.purple,
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getLocation();
+    });
+  }
 
   @override
   void dispose() {
@@ -79,22 +86,35 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
         throw Exception('Permisos de ubicación denegados permanentemente.');
       }
 
-      final position = await Geolocator.getCurrentPosition();
+      final locationSettings = kIsWeb
+          ? const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 15),
+            )
+          : const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 10),
+            );
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
+      );
       setState(() {
-        _currentPosition = position;
         _mapCenter = LatLng(position.latitude, position.longitude);
         _addressText = 'Buscando dirección...';
       });
-      
+
       if (mapController != null) {
-        mapController!.animateCamera(CameraUpdate.newLatLngZoom(_mapCenter, 16.0));
+        mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(_mapCenter, 16.0),
+        );
       }
 
       await _updateAddressFromLatLng(_mapCenter);
-
     } catch (e) {
       if (mounted) {
-        setState(() => _addressText = 'Error de ubicación: intenta mover el mapa');
+        setState(
+          () => _addressText = 'Error de ubicación: intenta mover el mapa',
+        );
         CustomPopups.showError(
           context: context,
           title: 'Error de ubicación',
@@ -117,7 +137,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
         if (mounted) {
           setState(() {
             _addressText =
-                '${place.street ?? ""}, ${place.subLocality ?? place.locality ?? place.administrativeArea ?? ""}';
+                '${place.street ?? ""}, ${place.subLocality ?? place.locality ?? place.administrativeArea ?? ""} (${latLng.latitude.toStringAsFixed(4)}, ${latLng.longitude.toStringAsFixed(4)})';
           });
         }
       } else {
@@ -186,11 +206,17 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
   void _onMapCreated(MapLibreMapController controller) {
     mapController = controller;
   }
-  
+
+  void _onCameraMove(CameraPosition position) {
+    _mapCenter = position.target;
+  }
+
   void _onCameraIdle() {
     if (mapController != null) {
-      setState(() {
+      if (mapController!.cameraPosition != null) {
         _mapCenter = mapController!.cameraPosition!.target;
+      }
+      setState(() {
         _addressText = 'Cargando dirección...';
       });
       _updateAddressFromLatLng(_mapCenter);
@@ -200,7 +226,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
   @override
   Widget build(BuildContext context) {
     final baseTheme = Theme.of(context);
-    
+
     // Forzamos el esquema de color a un rojo expressive sin perder el modo oscuro/claro
     final theme = baseTheme.copyWith(
       colorScheme: ColorScheme.fromSeed(
@@ -208,7 +234,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
         brightness: baseTheme.brightness,
       ),
     );
-    
+
     final colorScheme = theme.colorScheme;
 
     return Theme(
@@ -226,7 +252,10 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -241,7 +270,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                 CategorySelector(
                   categories: _categories,
                   selectedCategory: _selectedCategory,
-                  onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
+                  onCategorySelected: (cat) =>
+                      setState(() => _selectedCategory = cat),
                   colorScheme: colorScheme,
                 ),
                 Text(
@@ -257,7 +287,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   onUrgencySelected: (u) => setState(() => _urgency = u),
                 ),
                 const SizedBox(height: 32),
-                
+
                 Text(
                   '3. Descripción (opcional)',
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -270,13 +300,16 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   controller: _descriptionController,
                   maxLines: 3,
                   decoration: InputDecoration(
-                    hintText: 'Detalla lo ocurrido para ayudar a los gestores...',
+                    hintText:
+                        'Detalla lo ocurrido para ayudar a los gestores...',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    fillColor: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.3,
+                    ),
                   ),
                 ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
                 const SizedBox(height: 32),
@@ -295,6 +328,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   isGettingLocation: _isGettingLocation,
                   onMapCreated: _onMapCreated,
                   onCameraIdle: _onCameraIdle,
+                  onCameraMove: _onCameraMove,
                   onGetLocation: _getLocation,
                   colorScheme: colorScheme,
                 ),
@@ -343,5 +377,4 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
       ),
     );
   }
-
 }

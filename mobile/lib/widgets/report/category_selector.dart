@@ -33,7 +33,7 @@ class CategorySelector extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? colorScheme.primaryContainer
-                  : colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
                 color: isSelected ? colorScheme.primary : Colors.transparent,

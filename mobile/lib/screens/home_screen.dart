@@ -58,14 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
             IconData categoryIcon = Icons.report_problem_rounded;
             final typeLower = i.tipo.toLowerCase();
-            if (typeLower.contains('seguridad'))
+            if (typeLower.contains('seguridad')) {
               categoryIcon = Icons.shield_rounded;
-            else if (typeLower.contains('médic'))
+            } else if (typeLower.contains('médic')) {
               categoryIcon = Icons.medical_services_rounded;
-            else if (typeLower.contains('públic'))
+            } else if (typeLower.contains('públic')) {
               categoryIcon = Icons.construction_rounded;
-            else if (typeLower.contains('civil'))
+            } else if (typeLower.contains('civil')) {
               categoryIcon = Icons.warning_rounded;
+            }
 
             String timeStr = "00:00";
             if (i.fechaReporte.contains('T')) {

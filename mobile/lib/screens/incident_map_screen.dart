@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:geolocator/geolocator.dart';
@@ -42,7 +43,18 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
           final permission = await Geolocator.checkPermission();
           if (permission == LocationPermission.always ||
               permission == LocationPermission.whileInUse) {
-            final pos = await Geolocator.getCurrentPosition();
+            final locationSettings = kIsWeb
+                ? const LocationSettings(
+                    accuracy: LocationAccuracy.high,
+                    timeLimit: Duration(seconds: 15),
+                  )
+                : const LocationSettings(
+                    accuracy: LocationAccuracy.high,
+                    timeLimit: Duration(seconds: 10),
+                  );
+            final pos = await Geolocator.getCurrentPosition(
+              locationSettings: locationSettings,
+            );
             _userLocation = pos;
             _center = LatLng(pos.latitude, pos.longitude);
           } else if (incidents.isNotEmpty) {
@@ -123,7 +135,7 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
   }
 
   Future<void> _updatePopupPosition() async {
-    if (mapController == null || _selectedIncident == null) return;
+    if (mapController == null || _selectedIncident == null || !mounted) return;
     try {
       final LatLng coords = _selectedIncident!['latLng'];
       final point = await mapController!.toScreenLocation(coords);
@@ -143,16 +155,101 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
     return Colors.green;
   }
 
+  Future<void> _locateUser() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Los servicios de ubicación están deshabilitados.');
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Permisos de ubicación denegados.');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Permisos de ubicación denegados permanentemente.');
+      }
+
+      final locationSettings = kIsWeb
+          ? const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 15),
+            )
+          : const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 10),
+            );
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _userLocation = pos;
+      });
+
+      if (mapController != null) {
+        final theme = Theme.of(context);
+        final primaryHex =
+            '#${theme.colorScheme.primary.toARGB32().toRadixString(16).substring(2)}';
+
+        try {
+          await mapController!.removeLayer("user-point-layer");
+          await mapController!.removeSource("user-location");
+        } catch (_) {}
+
+        await mapController!.addGeoJsonSource("user-location", {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [pos.longitude, pos.latitude],
+          },
+        });
+        await mapController!.addCircleLayer(
+          "user-location",
+          "user-point-layer",
+          CircleLayerProperties(
+            circleRadius: 8.0,
+            circleColor: primaryHex,
+            circleStrokeWidth: 3.0,
+            circleStrokeColor: "#FFFFFF",
+          ),
+        );
+
+        mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(pos.latitude, pos.longitude),
+            15.0,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error de ubicación: ${e.toString().replaceAll("Exception: ", "")}',
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _onStyleLoaded() async {
     final controller = mapController;
-    if (controller == null) return;
+    if (controller == null || !mounted) return;
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
     // Convertir colores a HEX para el mapa
-    final primaryHex = '#${colorScheme.primary.value.toRadixString(16).substring(2)}';
-    final errorHex = '#${colorScheme.error.value.toRadixString(16).substring(2)}';
+    final primaryHex = '#${colorScheme.primary.toARGB32().toRadixString(16).substring(2)}';
+    final errorHex = '#${colorScheme.error.toARGB32().toRadixString(16).substring(2)}';
     final warningHex = '#FF9800'; // Naranja
     final successHex = '#4CAF50'; // Verde
     
@@ -299,12 +396,12 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
           width: 260,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: colorScheme.surface.withOpacity(0.95),
+            color: colorScheme.surface.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withOpacity(0.3), width: 2),
+            border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.shadow.withOpacity(0.15),
+                color: colorScheme.shadow.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -320,7 +417,7 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.15),
+                      color: color.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.warning_amber_rounded, color: color, size: 20),
@@ -403,26 +500,7 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
               elevation: 6,
               backgroundColor: colorScheme.primaryContainer,
               foregroundColor: colorScheme.onPrimaryContainer,
-              onPressed: () {
-                if (_userLocation != null && mapController != null) {
-                  mapController!.animateCamera(
-                    CameraUpdate.newLatLngZoom(
-                      LatLng(
-                        _userLocation!.latitude,
-                        _userLocation!.longitude,
-                      ),
-                      15.0,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Ubicación actual no disponible'),
-                      backgroundColor: colorScheme.errorContainer,
-                    ),
-                  );
-                }
-              },
+              onPressed: _locateUser,
               icon: const Icon(Icons.my_location_rounded),
               label: const Text('Mi Ubicación'),
             ),

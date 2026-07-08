@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -85,7 +86,7 @@ class ApiService {
         _role = data['rol'];
       }
     } catch (e) {
-      print('Error obteniendo usuario actual: $e');
+      debugPrint('Error obteniendo usuario actual: $e');
     }
   }
 
