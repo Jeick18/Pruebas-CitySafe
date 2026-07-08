@@ -105,8 +105,8 @@ def eliminar_incidente(
     if not incidente:
         raise HTTPException(status_code=404, detail="Incidente no encontrado")
     
-    # Permite borrar solo al creador de los incidentes
-    if incidente.usuario_id != current_user.id:
+    # Permite borrar al creador del incidente o a un gestor/admin
+    if incidente.usuario_id != current_user.id and current_user.rol not in ["gestor", "admin"]:
         raise HTTPException(status_code=403, detail="No autorizado para eliminar este incidente")
         
     db.delete(incidente)

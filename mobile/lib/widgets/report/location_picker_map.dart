@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -10,6 +11,7 @@ class LocationPickerMap extends StatelessWidget {
   final bool isGettingLocation;
   final void Function(MapLibreMapController) onMapCreated;
   final VoidCallback onCameraIdle;
+  final void Function(CameraPosition)? onCameraMove;
   final VoidCallback onGetLocation;
   final ColorScheme colorScheme;
 
@@ -20,6 +22,7 @@ class LocationPickerMap extends StatelessWidget {
     required this.isGettingLocation,
     required this.onMapCreated,
     required this.onCameraIdle,
+    this.onCameraMove,
     required this.onGetLocation,
     required this.colorScheme,
   });
@@ -53,13 +56,14 @@ class LocationPickerMap extends StatelessWidget {
                 MapLibreMap(
                   onMapCreated: onMapCreated,
                   onCameraIdle: onCameraIdle,
+                  onCameraMove: onCameraMove,
                   initialCameraPosition: CameraPosition(
                     target: mapCenter,
                     zoom: 14.0,
                   ),
                   styleString:
                       'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-                  myLocationEnabled: true,
+                  myLocationEnabled: !kIsWeb,
                   trackCameraPosition: true,
                 ),
                 const Icon(Icons.location_on, size: 48, color: Colors.red),

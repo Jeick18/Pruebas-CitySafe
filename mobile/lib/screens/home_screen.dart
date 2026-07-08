@@ -58,9 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
             IconData categoryIcon = Icons.report_problem_rounded;
             final typeLower = i.tipo.toLowerCase();
-            if (typeLower.contains('seguridad'))
+            if (typeLower.contains('seguridad')) {
               categoryIcon = Icons.shield_rounded;
-            else if (typeLower.contains('médic'))
+            } else if (typeLower.contains('médic'))
               categoryIcon = Icons.medical_services_rounded;
             else if (typeLower.contains('públic'))
               categoryIcon = Icons.construction_rounded;
