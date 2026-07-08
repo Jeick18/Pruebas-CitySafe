@@ -24,7 +24,6 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   bool _isLoading = false;
 
-  Position? _currentPosition;
   String _addressText = 'Toca para buscar tu ubicación';
   bool _isGettingLocation = false;
 
@@ -100,7 +99,6 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
         locationSettings: locationSettings,
       );
       setState(() {
-        _currentPosition = position;
         _mapCenter = LatLng(position.latitude, position.longitude);
         _addressText = 'Buscando dirección...';
       });
@@ -309,8 +307,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest.withOpacity(
-                      0.3,
+                    fillColor: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.3,
                     ),
                   ),
                 ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),

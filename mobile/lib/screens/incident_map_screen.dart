@@ -195,7 +195,7 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
       if (mapController != null) {
         final theme = Theme.of(context);
         final primaryHex =
-            '#${theme.colorScheme.primary.value.toRadixString(16).substring(2)}';
+            '#${theme.colorScheme.primary.toARGB32().toRadixString(16).substring(2)}';
 
         try {
           await mapController!.removeLayer("user-point-layer");
@@ -248,8 +248,8 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
     final colorScheme = theme.colorScheme;
     
     // Convertir colores a HEX para el mapa
-    final primaryHex = '#${colorScheme.primary.value.toRadixString(16).substring(2)}';
-    final errorHex = '#${colorScheme.error.value.toRadixString(16).substring(2)}';
+    final primaryHex = '#${colorScheme.primary.toARGB32().toRadixString(16).substring(2)}';
+    final errorHex = '#${colorScheme.error.toARGB32().toRadixString(16).substring(2)}';
     final warningHex = '#FF9800'; // Naranja
     final successHex = '#4CAF50'; // Verde
     
@@ -396,12 +396,12 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
           width: 260,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: colorScheme.surface.withOpacity(0.95),
+            color: colorScheme.surface.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withOpacity(0.3), width: 2),
+            border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.shadow.withOpacity(0.15),
+                color: colorScheme.shadow.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -417,7 +417,7 @@ class _IncidentMapScreenState extends State<IncidentMapScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.15),
+                      color: color.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.warning_amber_rounded, color: color, size: 20),

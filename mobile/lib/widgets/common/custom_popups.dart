@@ -53,7 +53,7 @@ class CustomPopups {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black.withValues(alpha: 0.4),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, anim1, anim2) {
         return const SizedBox.shrink();
@@ -77,15 +77,15 @@ class CustomPopups {
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).colorScheme.surface.withOpacity(0.85),
+                      ).colorScheme.surface.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(28),
                       border: Border.all(
-                        color: baseColor.withOpacity(0.4),
+                        color: baseColor.withValues(alpha: 0.4),
                         width: 2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: baseColor.withOpacity(0.2),
+                          color: baseColor.withValues(alpha: 0.2),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),
@@ -97,7 +97,7 @@ class CustomPopups {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: baseColor.withOpacity(0.1),
+                            color: baseColor.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(icon, color: baseColor, size: 48)

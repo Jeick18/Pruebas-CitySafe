@@ -35,7 +35,7 @@ class UrgencySelector extends StatelessWidget {
             border: Border.all(
               color: isSelected
                   ? Colors.transparent
-                  : colorScheme.outline.withOpacity(0.2),
+                  : colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           child: Column(

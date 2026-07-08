@@ -140,7 +140,7 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(32),
             ),
             child: Column(
@@ -205,12 +205,12 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
-          color: colorScheme.outline.withOpacity(0.2),
+          color: colorScheme.outline.withValues(alpha: 0.2),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
+            color: colorScheme.shadow.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -265,7 +265,7 @@ class _GestorHomeScreenState extends State<GestorHomeScreen> {
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               await ApiService().logout();
-              if (mounted) Navigator.pushReplacementNamed(context, '/');
+              if (context.mounted) Navigator.pushReplacementNamed(context, '/');
             },
             tooltip: 'Cerrar sesión',
           ),
