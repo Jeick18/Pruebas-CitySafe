@@ -73,7 +73,7 @@ def reportar_incidente(
     ).first()
 
     # Si existe y es de un dispositivo IoT, se actualizan los datos
-    if incidente_existente and incidente.tipo in ["Alarma Acústica", "Botón de Pánico"]: #Se pueden agregar más iot si se desea
+    if incidente_existente and incidente.tipo in ["Alarma Acústica", "Botón de Pánico"]:
         incidente_existente.descripcion = incidente.descripcion
         incidente_existente.nivel_urgencia = incidente.nivel_urgencia
         incidente_existente.fecha_reporte = datetime.now()
@@ -112,3 +112,14 @@ def eliminar_incidente(
     db.delete(incidente)
     db.commit()
     return {"message": "Incidente eliminado exitosamente"}
+
+# NUEVA RUTA: Pública y exclusiva para simulaciones de Hardware (Tótems / Godot)
+@app.post("/incidentes/totem/", response_model=schemas.Incidente, tags=["Incidentes y Despacho"])
+def crear_incidente_totem(incidente: schemas.IncidenteCreate, db: Session = Depends(database.get_db)):
+    # Aquí está el cambio: cambiamos Incidente por IncidenteDB
+    nuevo_incidente = models.IncidenteDB(**incidente.model_dump(), usuario_id=1)
+    
+    db.add(nuevo_incidente)
+    db.commit()
+    db.refresh(nuevo_incidente)
+    return nuevo_incidente

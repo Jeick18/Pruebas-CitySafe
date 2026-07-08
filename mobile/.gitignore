@@ -1,23 +1,3 @@
-#Ignorar Entorno Virtual (venv/), Flutter (mobile/) 
-#y otros archivos o carpetas del proyecto.
-
-# Godot
-.godot/
-.import/
-*.import
-*.uid
-export/
-*.log
-
-.venv/
-venv/
-flutter/
-*.db
-.godot/
-__pycache__/
-citysafe.db
-
-# Todo relacionado a Flutter (archivos pesados)
 # Miscellaneous
 *.class
 *.log
@@ -46,12 +26,12 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
-mobile/.dart_tool/
-mobile/.flutter-plugins-dependencies
-mobile/.pub-cache/
-mobile/.pub/
-mobile/build/
-mobile/coverage/
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
 
 # Symbolication related
 app.*.symbols
@@ -60,6 +40,6 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-mobile/android/app/debug
-mobile/android/app/profile
-mobile/android/app/release
+/android/app/debug
+/android/app/profile
+/android/app/release

@@ -1,7 +1,7 @@
 import requests
 import time
 
-API_URL = "http://localhost:8000/incidentes/"
+API_URL = "http://localhost:8000/incidentes/totem/"
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKYXBwIiwiZXhwIjoxNzgwNTcwNDA0fQ.nDlR1keSRdpE5UthdfeMCEuq_h4e0lTi3Wyzu6ULVWU"
 
 # Ubicación estática del Botón
@@ -31,7 +31,7 @@ def iniciar_totem():
         }
 
         try:
-            response = requests.post(API_URL, json=payload, headers=headers)
+            response = requests.post(API_URL, json=payload)
             if response.status_code == 200:
                 print("[ÉXITO] Central notificada. Unidades en camino.")
             else:
